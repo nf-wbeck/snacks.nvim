@@ -250,10 +250,15 @@ function M:update()
     bottom = (vim.o.cmdheight + (vim.o.laststatus == 3 and 1 or 0)) or 0
     top = (vim.o.showtabline == 2 or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)) and 1 or 0
   end
+
+  local parentWidth = layout.relative == "win"
+    and vim.api.nvim_win_get_width(0)
+    or vim.o.columns;
+
   self:update_box(layout, {
     col = 0,
     row = self.opts.fullscreen and self.split and top or 0, -- only needed for fullscreen splits
-    width = vim.o.columns,
+    width = parentWidth,
     height = vim.o.lines - top - bottom,
   })
 
@@ -325,7 +330,8 @@ function M:update_box(box, parent)
   local free = vim.deepcopy(dim)
 
   local function size(child)
-    return child[size_main] or 0
+    local s = child[size_main]
+    return type(s) == "function" and 0 or s or 0
   end
 
   local dims = {} ---@type table<number, snacks.win.Dim>
