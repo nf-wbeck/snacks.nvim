@@ -166,7 +166,10 @@ end
 N.styles = {
   -- style using border title
   compact = function(buf, notif, ctx)
-    local title = vim.trim(notif.icon .. " " .. (notif.title or ""))
+    local title = ""
+    if notif.title ~= "" then
+      vim.trim(notif.icon .. " " .. (notif.title or ""))
+    end
     if title ~= "" then
       ctx.opts.title = { { " " .. title .. " ", ctx.hl.title } }
       ctx.opts.title_pos = "center"
