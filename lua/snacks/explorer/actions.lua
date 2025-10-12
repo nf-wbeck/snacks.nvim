@@ -86,7 +86,7 @@ function M.actions.explorer_open(_, item)
 end
 
 function M.actions.explorer_yank(picker)
-  local files = {} ---@type string[]
+  local files = { "yank" } ---@type string[]
   if vim.fn.mode():find("^[vV]") then
     picker.list:select()
   end
@@ -96,7 +96,21 @@ function M.actions.explorer_yank(picker)
   picker.list:set_selected() -- clear selection
   local value = table.concat(files, "\n")
   vim.fn.setreg(vim.v.register or "+", value, "l")
-  Snacks.notify.info("Yanked " .. #files .. " files")
+  Snacks.notify.info("Yanked " .. (#files - 1) .. " files")
+end
+
+function M.actions.explorer_cut(picker)
+  local files = { "cut" } ---@type string[]
+  if vim.fn.mode():find("^[vV]") then
+    picker.list:select()
+  end
+  for _, item in ipairs(picker:selected({ fallback = true })) do
+    table.insert(files, Snacks.picker.util.path(item))
+  end
+  picker.list:set_selected() -- clear selection
+  local value = table.concat(files, "\n")
+  vim.fn.setreg(vim.v.register or "+", value, "l")
+  Snacks.notify.info("Cut " .. (#files - 1) .. " files")
 end
 
 function M.actions.explorer_up(picker)
@@ -133,17 +147,73 @@ function M.actions.explorer_git_next(picker, item)
   end
 end
 
-function M.actions.explorer_paste(picker)
-  local files = vim.split(vim.fn.getreg(vim.v.register or "+") or "", "\n", { plain = true })
-  files = vim.tbl_filter(function(file)
-    return file ~= "" and vim.fn.filereadable(file) == 1
-  end, files)
+local PASTE_FROM = {
+  yank = function(files, dir)
+    Snacks.picker.util.copy(files, dir)
+    return true
+  end,
+  cut = function(files, dir)
+    for _, file in ipairs(files) do
+      Snacks.rename.rename_file({
+        from = file,
+        to = table.concat({ dir, vim.fn.fnamemodify(file, ":t") }, "/")
+      })
 
-  if #files == 0 then
+      Tree:refresh(vim.fs.dirname(dir))
+    end
+  end
+};
+function M.actions.explorer_paste(picker)
+  -- hack: make child item checking simpler at the cost of windows, oh no
+  local destDir = picker:dir()
+  local yanked = vim.split(vim.fn.getreg(vim.v.register or "+") or "", "\n", { plain = true })
+
+  local selection = vim.iter(yanked)
+  local action = selection:peek()
+  local items = selection
+      :skip(1)
+      :filter(function(item)
+        return item ~= ""
+            and item ~= destDir
+            and (
+              vim.fn.isdirectory(item) == 1
+              or vim.fn.filereadable(item) == 1
+            )
+      end)
+      :fold({}, function(roots, item)
+        if #roots == 0 or vim.fn.isdirectory(roots[#roots]) ~= 1 then
+          table.insert(roots, item)
+        else
+          -- hack: make child item checking simpler at the cost of windows, oh no
+          local prev = string.format("%s/", roots[#roots])
+          if #prev > #item or string.sub(item, 0, #prev) ~= prev then
+            table.insert(roots, item)
+          end
+        end
+
+        return roots
+      end)
+
+  if action == nil then
+    return Snacks.notify.warn(("The `%s` register does not contain a paste action"):format(vim.v.register or "+"))
+  elseif PASTE_FROM[action] == nil then
+    return Snacks.notify.warn("Not a valid paste action")
+  elseif #items == 0 then
     return Snacks.notify.warn(("The `%s` register does not contain any files"):format(vim.v.register or "+"))
   end
+
+  local existing = vim.iter(items)
+      :filter(function(item)
+        return uv.fs_stat(svim.fs.normalize(destDir .. "/" .. vim.fn.fnamemodify(item, ":t")))
+      end)
+ 
+  if existing:peek() ~= nil then
+    return Snacks.notify.warn("File already exists:\n- " .. existing:join("\n- "))
+  end
+
   local dir = picker:dir()
-  Snacks.picker.util.copy(files, dir)
+  PASTE_FROM[action](items, dir)
+
   Tree:refresh(dir)
   Tree:open(dir)
   M.update(picker, { target = dir })
