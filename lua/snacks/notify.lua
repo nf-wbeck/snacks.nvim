@@ -20,7 +20,7 @@ function M.notify(msg, opts)
   notify = vim.in_fast_event() and vim.schedule_wrap(notify) or notify
   msg = type(msg) == "table" and table.concat(msg, "\n") or msg --[[@as string]]
   msg = vim.trim(msg)
-  opts.title = opts.title or "Snacks"
+  opts.title = opts.title or ""
   return notify(msg, opts.level, opts)
 end
 
