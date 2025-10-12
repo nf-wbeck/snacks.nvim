@@ -36,7 +36,7 @@ function M.rename_file(opts)
 
   local extra = from:sub(#root + 2)
 
-  vim.ui.input({
+  Snacks.input({
     prompt = "New File Name: ",
     default = extra,
     completion = "file",
