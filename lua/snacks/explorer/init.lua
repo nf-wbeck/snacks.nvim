@@ -16,6 +16,7 @@ M.meta = {
 ---@class snacks.explorer.Config
 local defaults = {
   replace_netrw = true, -- Replace netrw with the snacks explorer
+  layout = nil,
 }
 
 ---@private
@@ -71,7 +72,8 @@ end
 --- Shortcut to open the explorer picker
 ---@param opts? snacks.picker.explorer.Config|{}
 function M.open(opts)
-  return Snacks.picker.explorer(opts)
+  local config = Snacks.config.get("explorer", defaults)
+  return Snacks.picker.explorer(vim.tbl_extend('force', config, opts))
 end
 
 --- Reveals the given file/buffer or the current buffer in the explorer
