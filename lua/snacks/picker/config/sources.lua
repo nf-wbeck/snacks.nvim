@@ -12,13 +12,15 @@ M.autocmds = {
 }
 
 ---@class snacks.picker.buffers.Config: snacks.picker.Config
+---@field items? snacks.picker.buffers.Item[] 
+---@field actions? table<string, snacks.picker.buffers.Action.spec> actions used by keymaps
 ---@field hidden? boolean show hidden buffers (unlisted)
 ---@field unloaded? boolean show loaded buffers
 ---@field current? boolean show current buffer
 ---@field nofile? boolean show `buftype=nofile` buffers
 ---@field modified? boolean show only modified buffers
 ---@field sort_lastused? boolean sort by last used
----@field filter? snacks.picker.filter.Config
+---@field filter? snacks.picker.filter.buffers.Config
 M.buffers = {
   finder = "buffers",
   format = "buffer",
@@ -36,7 +38,7 @@ M.buffers = {
   },
 }
 
----@class snacks.picker.explorer.Config: snacks.picker.files.Config|{}
+---@class snacks.picker.explorer.Config: snacks.picker.files.Config
 ---@field follow_file? boolean follow the file from the current buffer
 ---@field tree? boolean show the file tree (default: true)
 ---@field git_status? boolean show git status (default: true)
