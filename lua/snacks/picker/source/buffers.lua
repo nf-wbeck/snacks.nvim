@@ -1,5 +1,24 @@
 local M = {}
 
+---@class vim.Mark
+---@field [1] integer row
+---@field [2] integer col
+
+---@class snacks.picker.buffers.Item
+---@field flags unknown
+---@field buf integer
+---@field text string
+---@field file string
+---@field info vim.fn.getbufinfo.ret.item
+---@field pos vim.Mark 
+
+---@class snacks.picker.filter.buffers.Config: snacks.picker.buffers.Item
+---@field filter? fun(item:snacks.picker.buffers.Item, filter:snacks.picker.Filter):boolean? custom filter function
+
+---@alias snacks.picker.buffers.Action.fn fun(self: snacks.Picker, item?:snacks.picker.buffers.Item, action?:snacks.picker.Action):(boolean|string?)
+---@alias snacks.picker.buffers.Action.spec.one string|snacks.picker.Action|snacks.picker.Action.fn|{action?:snacks.picker.Action.spec.one}
+---@alias snacks.picker.buffers.Action.spec snacks.picker.Action.spec.one|snacks.picker.Action.spec.one[]
+
 ---@param opts snacks.picker.buffers.Config
 ---@type snacks.picker.finder
 function M.buffers(opts, ctx)
@@ -10,7 +29,7 @@ function M.buffers(opts, ctx)
     nofile = false,
     sort_lastused = true,
   }, opts)
-  local items = {} ---@type snacks.picker.finder.Item[]
+  local items = {} ---@type snacks.picker.buffers.Item[]
   local current_buf = vim.api.nvim_get_current_buf()
   local alternate_buf = vim.fn.bufnr("#")
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
