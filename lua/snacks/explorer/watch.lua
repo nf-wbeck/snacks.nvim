@@ -15,7 +15,18 @@ function M.start(path, cb)
     return
   end
   local handle = assert(vim.uv.new_fs_event())
-  local ok, err = handle:start(path, {}, function(_, file, events)
+  local ok, err = handle:start(path, {}, function(err, file, events)
+    if file == nil then
+      local msg = string.format("Failed to watch %s", path)
+      if err == "EMFILE" then
+        msg = msg .. "\nToo many open files"
+      end
+      return Snacks.notify.warn(string.format("%s [%s]", msg, err), {
+        title = "Explorer"
+      })
+    end
+
+    file = path .. "/" .. file
     if cb then
       -- Handle nil filename (FreeBSD kqueue bug where filename may be unavailable)
       -- In that case, we just pass the path being watched
