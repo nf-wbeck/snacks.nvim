@@ -406,7 +406,7 @@ function M:update_titles()
         local hl = table.concat(vim.tbl_map(function(a)
           return a:sub(1, 1):upper() .. a:sub(2)
         end, vim.split(name, "_")))
-        toggles[#toggles + 1] = { " " .. toggle.icon .. " ", "SnacksPickerToggle" .. hl }
+        toggles[#toggles + 1] = { toggle.icon, "SnacksPickerToggle" .. hl }
         toggles[#toggles + 1] = { " ", "FloatTitle" }
       end
     end
