@@ -72,6 +72,7 @@ end
 --- Shortcut to open the explorer picker
 ---@param opts? snacks.picker.explorer.Config|{}
 function M.open(opts)
+  opts = opts or {}
   local config = Snacks.config.get("explorer", defaults)
   return Snacks.picker.explorer(vim.tbl_extend('force', config, opts))
 end
