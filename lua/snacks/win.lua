@@ -1190,6 +1190,9 @@ function M:dim(parent)
     border = self:has_border(),
   }
 
+  self.opts.max_height = math.min(parent.height, self.opts.max_height or parent.height)
+  self.opts.max_width = math.min(parent.width, self.opts.max_width or parent.width)
+
   ---@param s? number|fun(win:snacks.win):number? size
   ---@param ps number parent size
   local function size(s, ps, border_offset)

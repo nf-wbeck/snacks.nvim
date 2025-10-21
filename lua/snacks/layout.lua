@@ -255,11 +255,17 @@ function M:update()
     and vim.api.nvim_win_get_width(0)
     or vim.o.columns;
 
+  local parentHeight = layout.relative == "win"
+    and vim.api.nvim_win_get_height(0)
+    or vim.o.columns;
+
+
+
   self:update_box(layout, {
     col = 0,
     row = self.opts.fullscreen and self.split and top or 0, -- only needed for fullscreen splits
     width = parentWidth,
-    height = vim.o.lines - top - bottom,
+    height = parentHeight,
   })
 
   -- fix fullscreen float layouts
